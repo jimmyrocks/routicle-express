@@ -8,7 +8,8 @@ var express = require('express')
   , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
-  , connections = require('connections');
+  , connections = require('./database/connections')
+  , paths = require('./database/rest');
 
 var app = express();
 var jquery = require('jquery');
@@ -31,7 +32,8 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/users', user.list);
+paths.addService(app, "shows", connections.ShowsModel);
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log('Express server listening on port ' + app.get('port'));
+  console.log('Ska server listening on port ' + app.get('port'));
 });

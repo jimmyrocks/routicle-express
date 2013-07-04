@@ -42,22 +42,12 @@ var venuesSchema = mongoose.Schema({
 
 // Using the Schemas
 
-/*
-var Shows = mongoose.model("show", showsSchema);
 
+exports.ShowsModel = mongoose.model("show", showsSchema);
+
+/*
 var newShow = new Shows({ name: "Gothic Party II"});
 console.log(newShow);
 //newShow.save();
 
-Shows.find(function (err, shows) {
-    console.log("All");
-    console.log(shows);
-    jquery.each(shows, function(showIndex, show) {
-        console.log(show);
-        show.remove();
-        show.save();
-    });
-    console.log("gone");
-    console.log(shows);
-});
 */
