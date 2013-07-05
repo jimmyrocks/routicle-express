@@ -2,14 +2,14 @@ var dataTrain = require("./AsyncTrain");
 exports.addService = function(app, table, mode) {
     // create a more usable CRUD matrix
     var crudMatrix = {};
-    for (var value in table.crud) {
-        if (value) {
-            crudMatrix[value.toLowerCase()] = true;
+    for (var value in table.crud.split('')) {
+        if (table.crud.split('')[value]) {
+            crudMatrix[table.crud.split('')[value].toLowerCase()] = true;
         };
     }
 
     // return the data in a useful format
-    var formatData = function(documents, res, req) {
+    var formatData = function(documents, req, res) {
         // Deal with any params after a question mark
         var queryParamsRaw = req._parsedUrl.query ? req._parsedUrl.query.split("&") : [];
         var queryParams = {};
@@ -50,21 +50,25 @@ exports.addService = function(app, table, mode) {
     };
 
     // List All
-    app.get('/' + table.model.modelName + '.:format', function(req, res) {
-        table.model.find(function (err, documents) {
-            formatData(documents, res, req);
+    if (crudMatrix["r"]) {
+        app.get('/' + table.model.modelName + '.:format', function(req, res) {
+            table.model.find(function (err, documents) {
+                formatData(documents, req, res);
+            });
         });
-    });
+    }
 
     // Create
-    app.post('/' + table.model.modelName + '.:format?', function(req, res) {
-        var document = new table.model(req.body);
-        console.log("req.body", document);
-        console.log("doc", document);
-        document.save(function() {
-            res.send(document.__doc);
+    if (crudMatrix["c"]) {
+        app.post('/' + table.model.modelName + '.:format?', function(req, res) {
+            var document = new table.model(req.body);
+            document.save(function() {
+                table.model.find({_id: document._id}, function (err, documents) {
+                    formatData(documents, req, res);
+                });
+            });
         });
-    });
+    }
 
     var crudFields = function(thisMatrix) {
         // Create a function for the query
@@ -73,16 +77,14 @@ exports.addService = function(app, table, mode) {
             var query = {};
             query[thisMatrix.operator] = [field];
             returnValue[thisMatrix.dbField] = query;
-            console.log(returnValue);
             return returnValue;
         };
 
         // Read
         if (crudMatrix["r"]) {
-            console.log(table.model.modelName, thisMatrix.externalName);
             app.get('/'+table.model.modelName+'/'+thisMatrix.externalName+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
-                    formatData(documents, res, req);
+                    formatData(documents, req, res);
                 });
             });
         }
@@ -114,11 +116,7 @@ exports.addService = function(app, table, mode) {
             table.model.find(function (err, documents) {
                 var saveComplete =  function() {
                     table.model.find(function (err2, documents2) {
-                        // Return ALL documents, for fun!
-                        res.send(documents2.map(function(data) {
-                            // A useful representation of the object
-                            return data;
-                        }));
+                        formatData(documents2, req, res);
                     });
                 };
                 for (var index in documents) {
