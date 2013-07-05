@@ -32,7 +32,10 @@ if ('development' == app.get('env')) {
 
 app.get('/', routes.index);
 app.get('/users', user.list);
-paths.addService(app, "shows", connections.ShowsModel);
+var mode = "test";
+for (var key in connections.tables) {
+    paths.addService(app, connections.tables[key], mode);
+}
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Ska server listening on port ' + app.get('port'));
