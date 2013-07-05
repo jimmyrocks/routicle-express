@@ -1,12 +1,19 @@
 var dataTrain = require("./AsyncTrain");
-exports.addService = function(app, service, Model, fieldMatrix, mode) {
+exports.addService = function(app, table, mode) {
+    // create a more usable CRUD matrix
+    var crudMatrix = {};
+    for (var value in table.crud) {
+        if (value) {
+            crudMatrix[value.toLowerCase()] = true;
+        };
+    }
 
     // return the data in a useful format
     var formatData = function(documents, res, req) {
         // Deal with any params after a question mark
         var queryParamsRaw = req._parsedUrl.query ? req._parsedUrl.query.split("&") : [];
         var queryParams = {};
-        for (var paramIndex=0; paramIndex < queryParamsRaw.length; paramIndex++) {
+        for (var paramIndex in queryParamsRaw) {
             var param = queryParamsRaw[paramIndex].split("=");
             if (param.length === 2) {
                 queryParams[param[0].toLowerCase()] = param[1];
@@ -37,21 +44,21 @@ exports.addService = function(app, service, Model, fieldMatrix, mode) {
         } else {
             // Return as HTML
             documents.map(function(data) {
-                res.render('index', { "title": service, "data": data });
+                res.render('index', { "title": table.model.modelName, "data": data });
             });
         }
     };
 
     // List All
-    app.get('/' + service + '.:format', function(req, res) {
-        Model.find(function (err, documents) {
+    app.get('/' + table.model.modelName + '.:format', function(req, res) {
+        table.model.find(function (err, documents) {
             formatData(documents, res, req);
         });
     });
 
     // Create
-    app.post('/' + service + '.:format?', function(req, res) {
-        var document = new Model(req.body);
+    app.post('/' + table.model.modelName + '.:format?', function(req, res) {
+        var document = new table.model(req.body);
         console.log("req.body", document);
         console.log("doc", document);
         document.save(function() {
@@ -71,41 +78,42 @@ exports.addService = function(app, service, Model, fieldMatrix, mode) {
         };
 
         // Read
-        if (thisMatrix.crud.toUpperCase().indexOf("C")>=0) {
-            console.log(service, thisMatrix.externalName);
-            app.get('/'+service+'/'+thisMatrix.externalName+'/:field.:format?', function(req, res) {
-                Model.find(queryFunction(req.params.field), function (err, documents) {
+        if (crudMatrix["r"]) {
+            console.log(table.model.modelName, thisMatrix.externalName);
+            app.get('/'+table.model.modelName+'/'+thisMatrix.externalName+'/:field.:format?', function(req, res) {
+                table.model.find(queryFunction(req.params.field), function (err, documents) {
                     formatData(documents, res, req);
                 });
             });
         }
 
-        if (thisMatrix.crud.toUpperCase().indexOf("U")>=0) {
+        if (crudMatrix["u"]) {
             // Update
-            app.put('/'+service+'/'+thisMatrix.externalFieldName+'/:field.:format?', function(req, res) {
+            app.put('/'+table.model.modelName+'/'+thisMatrix.externalFieldName+'/:field.:format?', function(req, res) {
             });
         }
 
-        if (thisMatrix.crud.toUpperCase().indexOf("D")>=0) {
+        if (crudMatrix["d"]) {
             // Delete
-            app.del('/'+service+'/'+thisMatrix.externalFieldName+'/:field.:format?', function(req, res) {
+            app.del('/'+table.model.modelName+'/'+thisMatrix.externalFieldName+'/:field.:format?', function(req, res) {
             });
         }
     };
 
-
-    for (var fieldIndex=0; fieldIndex<fieldMatrix.length; fieldIndex++) {
+    // Create the CRUD fields
+    var fieldMatrix = table.queryFields;
+    for (var fieldIndex in fieldMatrix) {
         crudFields(fieldMatrix[fieldIndex]);
     }
 
     //////////////////////////////////////////////////////////////////////
     // Clear All (only for test mode!)
     if (mode && mode === "test") {
-        app.get('/' + service + '_clear', function(req, res) {
+        app.get('/' + table.model.modelName + '_clear', function(req, res) {
             var saveTrain = dataTrain.AsyncTrain();
-            Model.find(function (err, documents) {
+            table.model.find(function (err, documents) {
                 var saveComplete =  function() {
-                    Model.find(function (err2, documents2) {
+                    table.model.find(function (err2, documents2) {
                         // Return ALL documents, for fun!
                         res.send(documents2.map(function(data) {
                             // A useful representation of the object
@@ -113,7 +121,7 @@ exports.addService = function(app, service, Model, fieldMatrix, mode) {
                         }));
                     });
                 };
-                for (var index=0; index < documents.length; index++) {
+                for (var index in documents) {
                     var currentDocument = documents[index];
                     saveTrain.add(currentDocument, "remove");
                 }
