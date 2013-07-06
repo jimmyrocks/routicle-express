@@ -1,24 +1,27 @@
 exports.addService = function(app, table, mode) {
     // create a more usable CRUD matrix
-    var crudMatrix = {};
-    for (var value in table.crud[mode].split('')) {
-        var thisCrud = table.crud[mode].split('')[value];
-        if (thisCrud) {
-            crudMatrix[thisCrud.toLowerCase()] = true;
-        };
-    }
+    var splitCrud = function(crudString) {
+        var crudObject = {};
+        crudString.split('').map(function(character) {
+            if (character) {
+                crudObject[character.toLowerCase()] = true;
+            }
+        });
+        return crudObject;
+    };
+    var tableCrud = splitCrud(table.crud[mode]);
 
     // return the data in a useful format
     var formatData = function(documents, req, res) {
         // Deal with any params after a question mark
         var queryParamsRaw = req._parsedUrl.query ? req._parsedUrl.query.split("&") : [];
         var queryParams = {};
-        for (var paramIndex in queryParamsRaw) {
-            var param = queryParamsRaw[paramIndex].split(/=(.*)/, 2);
+        queryParamsRaw.map(function(params) {
+            var param = params.split(/=(.*)/, 2);
             if (param.length === 2) {
                 queryParams[param[0].toLowerCase()] = param[1];
             }
-        }
+        });
 
         // Deal with undefined documents
         documents = documents ? documents : [];
@@ -34,6 +37,17 @@ exports.addService = function(app, table, mode) {
                 }
             };
 
+            console.log("1", table.displayFields[mode]);
+            // Filter the output based on user settings
+            var filter = null;
+            if (table.displayFields && table.displayFields[mode]) {
+                console.log("1");
+                filter = [];
+                table.displayFields[mode].map(function(displayField) {
+                    filter.push(displayField);
+                });
+            }
+
             // Pretty print output if required
             var indent = null;
             if (queryParams.pretty) {
@@ -44,7 +58,7 @@ exports.addService = function(app, table, mode) {
             res.writeHead(200, {'Content-Type' : 'application/json' });
             res.write(toJsonp(JSON.stringify(documents.map(function(output) {
                 return output;
-            }), null , indent)));
+            }), filter , indent)));
             res.end();
         } else {
             // Return as HTML
@@ -53,7 +67,7 @@ exports.addService = function(app, table, mode) {
     };
 
     // List All
-    if (crudMatrix["r"]) {
+    if (tableCrud["r"]) {
         app.get('/' + table.model.modelName + '.:format', function(req, res) {
             table.model.find(function (err, documents) {
                 formatData(documents, req, res);
@@ -62,7 +76,7 @@ exports.addService = function(app, table, mode) {
     }
 
     // Create
-    if (crudMatrix["c"]) {
+    if (tableCrud["c"]) {
         app.post('/' + table.model.modelName + '.:format?', function(req, res) {
             var document = new table.model(req.body);
             document.save(function() {
@@ -73,38 +87,37 @@ exports.addService = function(app, table, mode) {
         });
     }
 
-    var crudFields = function(thisMatrix) {
+    var crudFields = function(thisField) {
         // Create a function for the query
         var queryFunction = function(field) {
             var returnValue = {};
             var query = {};
-            query[thisMatrix.operator] = [field];
-            returnValue[thisMatrix.dbField] = query;
+            query[thisField.operator] = [field];
+            returnValue[thisField.dbField] = query;
             return returnValue;
         };
+        var fieldCrudMatrix = splitCrud(thisField.crud);
 
         // Read Function
         var getCurrentData = function (req, res) {
             table.model.find(queryFunction(req.params.field), function (err, documents) {
-                console.log("qq", documents);
-                console.log("err", err);
                 formatData(documents, req, res);
             });
         };
 
         // Read
-         if (crudMatrix["r"]) {
-            app.get('/'+table.model.modelName+'/'+thisMatrix.externalName+'/:field.:format?', getCurrentData);
+         if (tableCrud["r"] && fieldCrudMatrix["r"]) {
+            app.get('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', getCurrentData);
         }
 
         // Update
-        if (crudMatrix["u"]) {
-            app.put('/'+table.model.modelName+'/'+thisMatrix.externalName+'/:field.:format?', function(req, res) {
+        // TODO: Add the ability to move the original entry to a logging table
+        if (tableCrud["u"] && fieldCrudMatrix["u"]) {
+            app.put('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if (documents && documents.length > 0) {
                         var callbackCount = 0;
-                        for (var docIndex in documents) {
-                            var doc = documents[docIndex];
+                        documents.map(function(doc) {
                             for (var field in req.body) {
                                 if (req.body[field]) {
                                     doc[field] = req.body[field];
@@ -116,7 +129,7 @@ exports.addService = function(app, table, mode) {
                                     });
                                 };
                             }
-                        }
+                        });
                     } else {
                         formatData(documents, req, res);
                     }
@@ -125,13 +138,15 @@ exports.addService = function(app, table, mode) {
         }
 
         // Delete
-        if (crudMatrix["d"]) {
-            app.del('/'+table.model.modelName+'/'+thisMatrix.externalName+'/:field.:format?', function(req, res) {
+        // TODO: Should this return the data that was deleted? or return an
+        // empty array?
+        // TODO: Add the ability to move the original entry to a logging table
+        if (tableCrud["d"] && fieldCrudMatrix["d"]) {
+            app.del('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if(documents && documents.length) {
                         var callbackCount = 0;
-                        for (var docIndex in documents) {
-                            var doc = documents[docIndex];
+                        documents.map(function(doc) {
                             doc.remove(function (err) {
                                 doc.save(function (save_err) {
                                     callbackCount++;
@@ -140,7 +155,7 @@ exports.addService = function(app, table, mode) {
                                     }
                                 });
                             });
-                        }
+                        });
                     } else {
                         format(documents, req, res);
                     }
@@ -149,9 +164,9 @@ exports.addService = function(app, table, mode) {
         }
     };
 
-    // Create the CRUD fields
+    // Create the REST/CRUD fields
     var fieldMatrix = table.queryFields;
-    for (var fieldIndex in fieldMatrix) {
-        crudFields(fieldMatrix[fieldIndex]);
-    }
+    table.queryFields.map(function(queryField) {
+        crudFields(queryField);
+    });
 };
