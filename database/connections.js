@@ -1,12 +1,23 @@
 // Open a database connection
 var mongoose = require('mongoose');
-mongoose.connect('mongodb://localhost/ska5280');
 
-var db = mongoose.connection;
-db.on('error', console.error.bind(console, 'connection error:'));
-db.once('open', function callback () {
-  console.log("YAY! Database Connected!");
-});
+exports.init = function(env) {
+    var dbConnetion = "";
+    switch (env) {
+        case 'test':
+            dbConnection = 'mongodb://localhost/ska5280-test';
+            break;
+        default:
+            dbConnection = 'mongodb://localhost/ska5280';
+    }
+
+    mongoose.connect(dbConnection);
+    var db = mongoose.connection;
+    db.on('error', console.error.bind(console, 'connection error:'));
+    db.once('open', function callback () {
+        console.log("Database Connected: " + dbConnection);
+    });
+}
 
 // Define the tables
 exports.tables = [{
@@ -19,7 +30,7 @@ exports.tables = [{
                 showTime: Date, //Show
                 endTime: Date,
                 bands: Array,
-                venue: Number,
+                venue: String,
                 advancedPrice: Number,
                 doorPrice: Number,
                 ticketPath: String,
@@ -37,7 +48,11 @@ exports.tables = [{
         dbField: "name",
         operator: "$all"
     }],
-    crud: "CRUD"
+    crud: {
+        user: "CRUD",
+        moderator: "CRUD",
+        admin: "CRUD"
+    }
 }, {
     displayName: "Bands",
     model: mongoose.model(
@@ -57,7 +72,11 @@ exports.tables = [{
         dbField: "name",
         operator: "$all"
     }],
-    crud: "CRUD"
+    crud: {
+        user: "CRUD",
+        moderator: "CRUD",
+        admin: "CRUD"
+    }
 }, {
     displayName: "Venues",
     model: mongoose.model(
@@ -83,5 +102,9 @@ exports.tables = [{
         dbField: "name",
         operator: "$all"
     }],
-    crud: "CRUD"
+    crud: {
+        user: "CRUD",
+        moderator: "CRUD",
+        admin: "CRUD"
+    }
 }];

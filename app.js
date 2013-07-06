@@ -12,7 +12,6 @@ var express = require('express')
   , paths = require('./database/rest');
 
 var app = express();
-var jquery = require('jquery');
 
 // all environments
 app.set('port', process.env.PORT || 3000);
@@ -30,11 +29,15 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
+// Navigation
 app.get('/', routes.index);
 app.get('/users', user.list);
-var mode = "test";
+
+// REST
+connections.init(app.get('env'));
+var userRole = "admin";
 for (var key in connections.tables) {
-    paths.addService(app, connections.tables[key], mode);
+    paths.addService(app, connections.tables[key], userRole);
 }
 
 http.createServer(app).listen(app.get('port'), function(){
