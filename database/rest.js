@@ -1,16 +1,4 @@
 exports.addService = function(app, table, mode) {
-    // create a more usable CRUD matrix
-    var splitCrud = function(crudString) {
-        var crudObject = {};
-        crudString.split('').map(function(character) {
-            if (character) {
-                crudObject[character.toLowerCase()] = true;
-            }
-        });
-        return crudObject;
-    };
-    var tableCrud = splitCrud(table.crud[mode]);
-
     // return the data in a useful format
     var formatData = function(documents, req, res) {
         // Deal with any params after a question mark
@@ -37,11 +25,9 @@ exports.addService = function(app, table, mode) {
                 }
             };
 
-            console.log("1", table.displayFields[mode]);
             // Filter the output based on user settings
             var filter = null;
             if (table.displayFields && table.displayFields[mode]) {
-                console.log("1");
                 filter = [];
                 table.displayFields[mode].map(function(displayField) {
                     filter.push(displayField);
@@ -67,7 +53,7 @@ exports.addService = function(app, table, mode) {
     };
 
     // List All
-    if (tableCrud["r"]) {
+    if (table.crud[mode]["r"]) {
         app.get('/' + table.model.modelName + '.:format', function(req, res) {
             table.model.find(function (err, documents) {
                 formatData(documents, req, res);
@@ -76,7 +62,7 @@ exports.addService = function(app, table, mode) {
     }
 
     // Create
-    if (tableCrud["c"]) {
+    if (table.crud[mode]["c"]) {
         app.post('/' + table.model.modelName + '.:format?', function(req, res) {
             var document = new table.model(req.body);
             document.save(function() {
@@ -96,7 +82,6 @@ exports.addService = function(app, table, mode) {
             returnValue[thisField.dbField] = query;
             return returnValue;
         };
-        var fieldCrudMatrix = splitCrud(thisField.crud);
 
         // Read Function
         var getCurrentData = function (req, res) {
@@ -106,13 +91,13 @@ exports.addService = function(app, table, mode) {
         };
 
         // Read
-         if (tableCrud["r"] && fieldCrudMatrix["r"]) {
+         if (table.crud[mode]["r"] && thisField.crud["r"]) {
             app.get('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', getCurrentData);
         }
 
         // Update
         // TODO: Add the ability to move the original entry to a logging table
-        if (tableCrud["u"] && fieldCrudMatrix["u"]) {
+        if (table.crud[mode]["u"] && thisField.crud["u"]) {
             app.put('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if (documents && documents.length > 0) {
@@ -141,7 +126,7 @@ exports.addService = function(app, table, mode) {
         // TODO: Should this return the data that was deleted? or return an
         // empty array?
         // TODO: Add the ability to move the original entry to a logging table
-        if (tableCrud["d"] && fieldCrudMatrix["d"]) {
+        if (table.crud[mode]["d"] && thisField.crud["d"]) {
             app.del('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if(documents && documents.length) {

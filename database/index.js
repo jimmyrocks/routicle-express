@@ -27,15 +27,43 @@ exports.init = function(env, callback) {
     };
 
     // Function to convert the CRUD string into T/F values
-    var splitCrud = function(crudString) {
-        var crudObject = {};
-        crudString.split('').map(function(character) {
-            if (character) {
-                crudObject[character.toLowerCase()] = true;
+    var convertCrud = function(crudObject) {
+
+        var splitCrud = function(crudString) {
+            //console.log("orig crud string: ", crudString);
+            var crudObject = {};
+            crudString.split('').map(function(character) {
+                if (character) {
+                    crudObject[character.toLowerCase()] = true;
+                }
+            });
+            //console.log("new crud obj: ", crudObject);
+            return crudObject;
+        }
+
+        var newCrudObject = {};
+        //console.log("woo", crudObject);
+        for (permissionLevel in crudObject) {
+            //console.log("perm level: ", permissionLevel);
+            if (crudObject.hasOwnProperty(permissionLevel)) {
+                newCrudObject[permissionLevel] = splitCrud(crudObject[permissionLevel]);
             }
-        });
-        return crudObject;
+        }
+        return newCrudObject;
     };
+
+    var addQueryFields = function(query, fieldName, pushTo) {
+        if(query && Object.prototype.toString.call( query ) === '[object Array]' ) {
+            query.map(function(queryObject) {
+                // Build the query field if it exists, as well as its
+                // associated CRUD matrix
+                queryObject["dbField"] = fieldName;
+                queryObject["crud"] = convertCrud(queryObject["crud"]);
+                pushTo.push(queryObject);
+            });
+        }
+    };
+
 
     // Loop through the tables and build them
     config.tables.map(function(table) {
@@ -44,19 +72,19 @@ exports.init = function(env, callback) {
         tableObject["displayName"] = table["displayName"];
         tableObject["queryFields"] = [];
 
-        // Create the schema
+        // Create the schema and the queries
         var schema = {};
         for (var fieldName in table.fields) {
             if (table.fields.hasOwnProperty(fieldName)) {
                 var field = table.fields[fieldName];
                 schema[fieldName] = typeLookup[field["type"].toLowerCase()];
-                if (field["query"]) {
-                    var queryObject = field["query"];
-                    queryObject["dbField"] = fieldName;
-                    tableObject["queryFields"].push(queryObject);
-                }
-            }
+                // Query Fields
+                addQueryFields(field['query'], fieldName, tableObject["queryFields"]);
+           }
         }
+
+        // Create the Table Level crud Matrix
+        tableObject["crud"] = convertCrud(table["tableCrud"]);
 
         // Create the model
         tableObject["model"] = mongoose.model(
@@ -64,12 +92,18 @@ exports.init = function(env, callback) {
             mongoose.Schema(schema)
         );
 
-        // Create the queryable fields
+        // Deal with the mongo field queries
+        if (table["mongoFields"]) {
+            for (var mongoFieldName in table.mongoFields) {
+                if (table.mongoFields.hasOwnProperty(mongoFieldName)) {
+                    addQueryFields(table.mongoFields[mongoFieldName].query, mongoFieldName, tableObject["queryFields"]);
+                }
+            }
+        }
 
         // Add it to the larger mongooseTables
         mongooseTables.push(tableObject);
     });
-
 
     // Send back to caller
     callback(mongooseTables);

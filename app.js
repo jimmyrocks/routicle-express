@@ -34,15 +34,12 @@ app.get('/', routes.index);
 app.get('/users', user.list);
 
 // REST
-database.init(app.get('env'), function(tables) {
-    console.log(tables);
-});
-/*connections.init(app.get('env'));
 var userRole = "admin";
-for (var key in connections.tables) {
-    paths.addService(app, connections.tables[key], userRole);
-}
-*/
+database.init(app.get('env'), function(tables) {
+    tables.map(function(table) {
+        paths.addService(app, table, userRole);
+    });
+});
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Ska server listening on port ' + app.get('port'));
