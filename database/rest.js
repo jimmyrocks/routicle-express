@@ -91,14 +91,14 @@ exports.addService = function(app, table, mode) {
         };
 
         // Read
-         if (table.crud[mode]["r"] && thisField.crud["r"]) {
-            app.get('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', getCurrentData);
+         if (table.crud[mode]["r"] && thisField.crud[mode]["r"]) {
+            app.get('/'+table.model.modelName+'/'+thisField.name+'/:field.:format?', getCurrentData);
         }
 
         // Update
         // TODO: Add the ability to move the original entry to a logging table
-        if (table.crud[mode]["u"] && thisField.crud["u"]) {
-            app.put('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', function(req, res) {
+        if (table.crud[mode]["u"] && thisField.crud[mode]["u"]) {
+            app.put('/'+table.model.modelName+'/'+thisField.name+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if (documents && documents.length > 0) {
                         var callbackCount = 0;
@@ -126,8 +126,8 @@ exports.addService = function(app, table, mode) {
         // TODO: Should this return the data that was deleted? or return an
         // empty array?
         // TODO: Add the ability to move the original entry to a logging table
-        if (table.crud[mode]["d"] && thisField.crud["d"]) {
-            app.del('/'+table.model.modelName+'/'+thisField.externalName+'/:field.:format?', function(req, res) {
+        if (table.crud[mode]["d"] && thisField.crud[mode]["d"]) {
+            app.del('/'+table.model.modelName+'/'+thisField.name+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if(documents && documents.length) {
                         var callbackCount = 0;
@@ -136,7 +136,7 @@ exports.addService = function(app, table, mode) {
                                 doc.save(function (save_err) {
                                     callbackCount++;
                                     if (callbackCount === documents.length) {
-                                        getCurrentData(req, res);
+                                        formatData(documents, req, res);
                                     }
                                 });
                             });
