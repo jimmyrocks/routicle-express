@@ -20,15 +20,15 @@ block content
   -       }
   -   }
   - }
-  table
+  table(style="border-collapse:collapse;")
     thead
         tr
-    - headers.map(function(headera) {
-          th(style="border: 1px solid black;") #{headera}
+    - headers.sort().map(function(header) {
+          th(style="border: 1px solid black;") #{header}
     - });
     - for (var result in data) {
     tr
-    -     headers.map(function(headerb) {
-      td(style="border: 1px solid black;") #{data[result][headerb]}
+    -     headers.map(function(header){
+      td(style="border: 1px solid black;") #{data[result][header]}
     -     });
     - }

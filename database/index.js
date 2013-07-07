@@ -1,6 +1,7 @@
 // Open a database connection
 var mongoose = require('mongoose');
 var config = require('./config');
+var allUsers = "!All_Users";
 
 // Set up the database based on environment
 exports.init = function(env, callback) {
@@ -62,6 +63,23 @@ exports.init = function(env, callback) {
             }
         };
 
+        var addDisplayFields = function(permissionLevels, fieldName, addTo) {
+
+            var addPermission = function(permissionLevel) {
+                if (addTo[permissionLevel]) {
+                    addTo[permissionLevel].push(fieldName);
+                } else {
+                    addTo[permissionLevel] = [fieldName];
+                }
+            };
+
+            if (permissionLevels && Object.prototype.toString.call( permissionLevels ) === '[object Array]' ) {
+                permissionLevels.map(addPermission);
+            } else {
+                addPermission(allUsers)
+            };
+        };
+
 
         // Loop through the tables and build them
         config.tables.map(function(table) {
@@ -69,6 +87,7 @@ exports.init = function(env, callback) {
             // Add the display name
             tableObject["displayName"] = table["displayName"];
             tableObject["queryFields"] = [];
+            tableObject["displayFields"] = [];
 
             // Create the schema and the queries
             var schema = {};
@@ -78,6 +97,7 @@ exports.init = function(env, callback) {
                     schema[fieldName] = typeLookup[field["type"].toLowerCase()];
                     // Query Fields
                     addQueryFields(field['query'], fieldName, tableObject["queryFields"]);
+                    addDisplayFields(field['displayField'], fieldName, tableObject["displayFields"]);
                }
             }
 
@@ -95,9 +115,12 @@ exports.init = function(env, callback) {
                 for (var mongoFieldName in table.mongoFields) {
                     if (table.mongoFields.hasOwnProperty(mongoFieldName)) {
                         addQueryFields(table.mongoFields[mongoFieldName].query, mongoFieldName, tableObject["queryFields"]);
+                        addDisplayFields(table.mongoFields[mongoFieldName]['displayField'], mongoFieldName, tableObject["displayFields"]);
                     }
                 }
             }
+
+            tableObject["allUsersParam"] = allUsers;
 
             // Add it to the larger mongooseTables
             mongooseTables.push(tableObject);

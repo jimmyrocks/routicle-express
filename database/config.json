@@ -102,35 +102,31 @@
         "moderator":"cru",
         "admin":"crud"
       },
-      "mongoFields":[
-        {
-          "_id":{
-            "displayField":[
-              "guest",
-              "user",
-              "moderator",
-              "admin"
-            ],
-            "query":[
-              {
-                "name":"id",
-                "operator":"$all",
-                "crud":{
-                  "guest":"r",
-                  "user":"r",
-                  "moderator":"cru",
-                  "admin":"crud"
-                }
+      "mongoFields":{
+        "_id":{
+          "displayField":[
+            "guest",
+            "user",
+            "moderator",
+            "admin"
+          ],
+          "query":[
+            {
+              "name":"id",
+              "operator":"$all",
+              "crud":{
+                "guest":"r",
+                "user":"r",
+                "moderator":"cru",
+                "admin":"crud"
               }
-            ]
-          },
-          "__v":{
-            "displayField":[
-
-            ]
-          }
+            }
+          ]
+        },
+        "__v":{
+          "displayField":[]
         }
-      ],
+      },
       "fields":{
         "name":{
           "type":"String",

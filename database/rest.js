@@ -27,12 +27,10 @@ exports.addService = function(app, table, mode) {
 
             // Filter the output based on user settings
             var filter = null;
-            if (table.displayFields && table.displayFields[mode]) {
-                console.log("FILTER TIME!");
+            if (table.displayFields && (table.displayFields[mode] || table.displayFields[table.allUsersParam])) {
                 filter = [];
-                table.displayFields[mode].map(function(displayField) {
-                    filter.push(displayField);
-                });
+                table.displayFields[mode].map(function(field){filter.push(field);});
+                table.displayFields[table.allUsersParam].map(function(field){filter.push(field);});
             }
 
             // Pretty print output if required
@@ -49,7 +47,6 @@ exports.addService = function(app, table, mode) {
             res.end();
         } else {
             // Return as HTML
-            console.log(documents);
             res.render('index', { "title": table.model.modelName, "data": documents});
         }
     };
