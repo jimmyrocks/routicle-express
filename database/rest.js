@@ -14,6 +14,18 @@ exports.addService = function(app, table, mode) {
         // Deal with undefined documents
         documents = documents ? documents : [];
 
+        // Filter the output based on user settings
+        var filter = null;
+        if (table.displayFields && (table.displayFields[mode] || table.displayFields[table.allUsersParam])) {
+            filter = [];
+            table.displayFields[mode].map(function(field){filter.push(field);});
+            table.displayFields[table.allUsersParam].map(function(field){filter.push(field);});
+        }
+
+        var getJsonString = function(currDocuments, currFilter, currIndent){
+            return JSON.stringify(currDocuments.map(function(output){return output;}), currFilter , currIndent);
+        };
+
         if (req.params && req.params.format === "json" || req.params.format === "jsonp") {
 
             // Convert output to jsonp if required
@@ -25,14 +37,6 @@ exports.addService = function(app, table, mode) {
                 }
             };
 
-            // Filter the output based on user settings
-            var filter = null;
-            if (table.displayFields && (table.displayFields[mode] || table.displayFields[table.allUsersParam])) {
-                filter = [];
-                table.displayFields[mode].map(function(field){filter.push(field);});
-                table.displayFields[table.allUsersParam].map(function(field){filter.push(field);});
-            }
-
             // Pretty print output if required
             var indent = null;
             if (queryParams.pretty) {
@@ -41,13 +45,14 @@ exports.addService = function(app, table, mode) {
 
             // Write out the JSON to the user
             res.writeHead(200, {'Content-Type' : 'application/json' });
-            res.write(toJsonp(JSON.stringify(documents.map(function(output) {
-                return output;
-            }), filter , indent)));
+            res.write(toJsonp(getJsonString(documents, filter, indent)));
             res.end();
         } else {
             // Return as HTML
-            res.render('index', { "title": table.model.modelName, "data": documents});
+
+            // Clean up the object before sending it out
+            var returnedObject = JSON.parse(getJsonString(documents, filter, indent));
+            res.render('index', { "title": table.model.modelName, "data": returnedObject});
         }
     };
 
