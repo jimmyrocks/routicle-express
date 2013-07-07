@@ -3,3 +3,32 @@ extends layout
 block content
   h1= title
   p Welcome to #{title}
+
+  - var headers = [];
+  - for (var result in data) {
+  -    for (var field in data[result]) {
+  -        if (data[result].hasOwnProperty(field)) {
+  -            var added = false;
+  -            headers.map(function(header){
+  -                if (header == field) {
+  -                    added = true;
+  -                }
+  -            });
+  -            if (!added) {
+  -                headers.push(field);
+  -            }
+  -       }
+  -   }
+  - }
+  table
+    thead
+        tr
+    - headers.map(function(headera) {
+          th(style="border: 1px solid black;") #{headera}
+    - });
+    - for (var result in data) {
+    tr
+    -     headers.map(function(headerb) {
+      td(style="border: 1px solid black;") #{data[result][headerb]}
+    -     });
+    - }

@@ -28,6 +28,7 @@ exports.addService = function(app, table, mode) {
             // Filter the output based on user settings
             var filter = null;
             if (table.displayFields && table.displayFields[mode]) {
+                console.log("FILTER TIME!");
                 filter = [];
                 table.displayFields[mode].map(function(displayField) {
                     filter.push(displayField);
@@ -48,14 +49,15 @@ exports.addService = function(app, table, mode) {
             res.end();
         } else {
             // Return as HTML
-            res.render('index', { "title": table.model.modelName, "data": documents });
+            console.log(documents);
+            res.render('index', { "title": table.model.modelName, "data": documents});
         }
     };
 
     // List All
     if (table.crud[mode]["r"]) {
         app.get('/' + table.model.modelName + '.:format', function(req, res) {
-            table.model.find(function (err, documents) {
+            table.model.find().lean().exec(function (err, documents) {
                 formatData(documents, req, res);
             });
         });
@@ -66,7 +68,7 @@ exports.addService = function(app, table, mode) {
         app.post('/' + table.model.modelName + '.:format?', function(req, res) {
             var document = new table.model(req.body);
             document.save(function() {
-                table.model.findById(document._id, function (err, documents) {
+                table.model.findById(document._id).lean().exec(function (err, documents) {
                     formatData([documents], req, res);
                 });
             });
@@ -85,7 +87,7 @@ exports.addService = function(app, table, mode) {
 
         // Read Function
         var getCurrentData = function (req, res) {
-            table.model.find(queryFunction(req.params.field), function (err, documents) {
+            table.model.find(queryFunction(req.params.field)).lean().exec(function (err, documents) {
                 formatData(documents, req, res);
             });
         };
