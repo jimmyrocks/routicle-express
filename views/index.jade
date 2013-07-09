@@ -4,31 +4,7 @@ block content
   h1= title
   p Welcome to #{title}
 
-  - var headers = [];
-  - for (var result in data) {
-  -    for (var field in data[result]) {
-  -        if (data[result].hasOwnProperty(field)) {
-  -            var added = false;
-  -            headers.map(function(header){
-  -                if (header == field) {
-  -                    added = true;
-  -                }
-  -            });
-  -            if (!added) {
-  -                headers.push(field);
-  -            }
-  -       }
-  -   }
-  - }
-  table(style="border-collapse:collapse;")
-    thead
-        tr
-    - headers.sort().map(function(header) {
-          th(style="border: 1px solid black;") #{header}
-    - });
-    - for (var result in data) {
-    tr
-    -     headers.map(function(header){
-      td(style="border: 1px solid black;") #{data[result][header]}
-    -     });
-    - }
+  div(id="tableOutput")
+    script(type='text/javascript')
+      $("#tableOutput").append(crudMatrix.renderTable(!{JSON.stringify(data)}));
+
