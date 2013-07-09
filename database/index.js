@@ -40,10 +40,10 @@ exports.init = function(env, callback) {
                     }
                 });
                 return crudObject;
-            }
+            };
 
             var newCrudObject = {};
-            for (permissionLevel in crudObject) {
+            for (var permissionLevel in crudObject) {
                 if (crudObject.hasOwnProperty(permissionLevel)) {
                     newCrudObject[permissionLevel] = splitCrud(crudObject[permissionLevel]);
                 }
@@ -56,8 +56,8 @@ exports.init = function(env, callback) {
                 query.map(function(queryObject) {
                     // Build the query field if it exists, as well as its
                     // associated CRUD matrix
-                    queryObject["dbField"] = fieldName;
-                    queryObject["crud"] = convertCrud(queryObject["crud"]);
+                    queryObject.dbField = fieldName;
+                    queryObject.crud = convertCrud(queryObject.crud);
                     pushTo.push(queryObject);
                 });
             }
@@ -76,8 +76,8 @@ exports.init = function(env, callback) {
             if (permissionLevels && Object.prototype.toString.call( permissionLevels ) === '[object Array]' ) {
                 permissionLevels.map(addPermission);
             } else {
-                addPermission(allUsers)
-            };
+                addPermission(allUsers);
+            }
         };
 
 
@@ -85,7 +85,7 @@ exports.init = function(env, callback) {
         config.tables.map(function(table) {
             var tableObject = {};
             // Add the display name
-            tableObject["displayName"] = table["displayName"];
+            tableObject.displayName = table.displayName;
             tableObject["queryFields"] = [];
             tableObject["displayFields"] = [];
 
@@ -129,5 +129,5 @@ exports.init = function(env, callback) {
         // Send back to caller
         callback(mongooseTables);
     };
-}
+};
 

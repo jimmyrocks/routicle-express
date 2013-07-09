@@ -26,6 +26,9 @@ exports.addService = function(app, table, mode) {
             return JSON.stringify(currDocuments.map(function(output){return output;}), currFilter , currIndent);
         };
 
+        // Pretty print output if required
+        var indent = queryParams.pretty ? 4 : null;
+
         if (req.params && req.params.format === "json" || req.params.format === "jsonp") {
 
             // Convert output to jsonp if required
@@ -36,12 +39,6 @@ exports.addService = function(app, table, mode) {
                     return json;
                 }
             };
-
-            // Pretty print output if required
-            var indent = null;
-            if (queryParams.pretty) {
-                indent = 4;
-            }
 
             // Write out the JSON to the user
             res.writeHead(200, {'Content-Type' : 'application/json' });
@@ -57,7 +54,7 @@ exports.addService = function(app, table, mode) {
     };
 
     // List All
-    if (table.crud[mode]["r"]) {
+    if (table.crud[mode].r) {
         app.get('/' + table.model.modelName + '.:format', function(req, res) {
             table.model.find().lean().exec(function (err, documents) {
                 formatData(documents, req, res);
@@ -66,7 +63,7 @@ exports.addService = function(app, table, mode) {
     }
 
     // Create
-    if (table.crud[mode]["c"]) {
+    if (table.crud[mode].c) {
         app.post('/' + table.model.modelName + '.:format?', function(req, res) {
             var document = new table.model(req.body);
             document.save(function() {
@@ -95,13 +92,13 @@ exports.addService = function(app, table, mode) {
         };
 
         // Read
-         if (table.crud[mode]["r"] && thisField.crud[mode]["r"]) {
+         if (table.crud[mode].r && thisField.crud[mode].r) {
             app.get('/'+table.model.modelName+'/'+thisField.name+'/:field.:format?', getCurrentData);
         }
 
         // Update
         // TODO: Add the ability to move the original entry to a logging table
-        if (table.crud[mode]["u"] && thisField.crud[mode]["u"]) {
+        if (table.crud[mode].u && thisField.crud[mode].u) {
             app.put('/'+table.model.modelName+'/'+thisField.name+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if (documents && documents.length > 0) {
@@ -110,13 +107,13 @@ exports.addService = function(app, table, mode) {
                             for (var field in req.body) {
                                 if (req.body[field]) {
                                     doc[field] = req.body[field];
-                                    doc.save(function(err) {
+                                    doc.save(function(err) { // TODO make this a seperate function
                                         callbackCount++;
                                         if (callbackCount === documents.length) {
                                             getCurrentData(req, res);
-                                        };
+                                        }
                                     });
-                                };
+                                }
                             }
                         });
                     } else {
@@ -130,7 +127,7 @@ exports.addService = function(app, table, mode) {
         // TODO: Should this return the data that was deleted? or return an
         // empty array?
         // TODO: Add the ability to move the original entry to a logging table
-        if (table.crud[mode]["d"] && thisField.crud[mode]["d"]) {
+        if (table.crud[mode].d && thisField.crud[mode].d) {
             app.del('/'+table.model.modelName+'/'+thisField.name+'/:field.:format?', function(req, res) {
                 table.model.find(queryFunction(req.params.field), function (err, documents) {
                     if(documents && documents.length) {

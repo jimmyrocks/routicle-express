@@ -13,7 +13,7 @@ exports.AsyncTrain = function() {
         if (dataTrain.completed === dataTrain.requests) {
             dataTrain.state++;
             finalCallback(requests);
-        };
+        }
     };
 
 
@@ -24,12 +24,12 @@ exports.AsyncTrain = function() {
                 for (var requestIndex = 0; requestIndex < requests.length; requestIndex++) {
                     var request = requests[requestIndex];
 
-                    var trainCallback = function(response) {
+                    var trainCallback = function(response) { //TODO: make this its own function elsewhere
                         dataTrain.completed++;
                         request.response = response;
                         if (request.callback) {
-                            request.callback(response)
-                        };
+                            request.callback(response);
+                        }
                         checkComplete(finalCallback);
                     };
 
