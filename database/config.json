@@ -1,9 +1,9 @@
 {
   "databases":{
-    "development":"mongodb://localhost/crudExpress-development",
-    "staging":"mongodb://localhost/crudExpress-staging",
-    "production":"mongodb://localhost/crudExpress",
-    "test":"mongodb://localhost/crudExpress-test"
+    "development":"mongodb://localhost/routicle-development",
+    "staging":"mongodb://localhost/routicle-staging",
+    "production":"mongodb://localhost/routicle",
+    "test":"mongodb://localhost/routicle-test"
   },
   "tables":[
     {
