@@ -8,8 +8,7 @@ var express = require('express')
   , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
-  , database = require('./database')
-  , paths = require('./database/rest');
+  , routicle = require('./routicle');
 
 var app = express();
 
@@ -34,12 +33,7 @@ app.get('/', routes.index);
 app.get('/users', user.list);
 
 // REST
-var userRole = "admin";
-database.init(app.get('env'), function(tables) {
-    tables.map(function(table) {
-        paths.addService(app, table, userRole);
-    });
-});
+app.use("/routicle", routicle.routes(app.get('env')));
 
 http.createServer(app).listen(app.get('port'), function(){
   console.log('Ska server listening on port ' + app.get('port'));

@@ -2,9 +2,25 @@
 var mongoose = require('mongoose');
 var config = require('./config');
 var allUsers = "!All_Users";
+var express = require('express');
+var paths = require('./rest');
+var app = express();
+
 
 // Set up the database based on environment
-exports.init = function(env, callback) {
+exports.routes = function(env) {    
+
+    var userRole = "admin";
+    init(env, function(tables) {
+        tables.map(function(table) {
+            paths.addService(app, table, userRole);
+        });
+    });
+
+    return app;
+};
+
+var init = function(env, callback) {
 
     // Define the database connection
     mongoose.connect(config.databases[env]);
