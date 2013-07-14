@@ -28,7 +28,7 @@ if ('development' == app.get('env')) {
   app.use(express.errorHandler());
 }
 
-// Navigation
+// Default Navigation
 app.get('/', routes.index);
 app.get('/users', user.list);
 
@@ -36,5 +36,5 @@ app.get('/users', user.list);
 app.use("/routicle", routicle.routes(app.get('env')));
 
 http.createServer(app).listen(app.get('port'), function(){
-  console.log('Ska server listening on port ' + app.get('port'));
+  console.log('Backbone test server listening on port ' + app.get('port'));
 });
