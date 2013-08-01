@@ -5,17 +5,23 @@
 
 var express = require('express')
   , routes = require('./routes')
-  , user = require('./routes/user')
   , http = require('http')
   , path = require('path')
   , routicle = require('./routicle');
 
 var app = express();
 
+// Let's try this
+app.configure(function () {
+    app.engine('html', require('uinexpress').__express)
+    app.set('view engine', 'html')
+});
+// ///
+
 // all environments
 app.set('port', process.env.PORT || 3000);
 app.set('views', __dirname + '/views');
-app.set('view engine', 'jade');
+app.set('view engine', 'html');
 app.use(express.favicon());
 app.use(express.logger('dev'));
 app.use(express.bodyParser());
@@ -30,7 +36,6 @@ if ('development' == app.get('env')) {
 
 // Default Navigation
 app.get('/', routes.index);
-app.get('/users', user.list);
 
 // REST
 app.use("/routicle", routicle.routes(app.get('env')));

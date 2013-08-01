@@ -1,4 +1,4 @@
-var crudMatrix = function() {
+var routicle = function() {
 
     // Useful JavaScript Functions
     var objectLoop = function(objects, callback) {
@@ -22,7 +22,7 @@ var crudMatrix = function() {
 
     // Render the data that comes back as an HTML table
     var renderTable = function(tableData) {
-        var htmlTable = htmlElement("table");
+        var htmlTable = htmlElement("table", null, {'class': 'table table-striped table-hover table-condensed'});
 
         // Determine the headers
         var headers = [];
@@ -37,7 +37,6 @@ var crudMatrix = function() {
                 if (!added) {
                     headers.push(field);
                 }
-
             });
         });
 

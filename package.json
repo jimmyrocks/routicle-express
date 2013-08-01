@@ -1,12 +1,17 @@
 {
-  "name": "Backbone Test",
+  "name": "Routicle_Backbone",
+  "displayName": "Routicle with Backbone",
   "version": "0.0.1",
   "private": true,
   "scripts": {
     "start": "node app.js"
   },
+  "repository": {
+      "type" : "git",
+      "url" : "https://github.com/jimmyrocks/routicle-express"
+  },
   "dependencies": {
     "express": "3.3.1",
-    "jade": "*"
+    "uinexpress": "*"
   }
 }
