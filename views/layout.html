@@ -1,0 +1,50 @@
+<html>
+    <head>
+        <title><%=title%></title>
+        <link rel="stylesheet" href="/stylesheets/style.css">
+        <link rel="stylesheet" href="/other/bootstrap.min.css">
+        <script src="/other/jquery-1.10.2.min.js"></script>
+        <script src="/scripts/routicle.js"></script>
+    </head>
+    <body>
+
+  <body>
+    <div class="navbar navbar-fixed-top" style="z-index:100">
+      <div class="navbar-inner">
+        <div class="container">
+          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="brand" href="/"><%=routicle.pjson.displayName%></a>
+          <div class="nav-collapse collapse">
+            <ul class="nav">
+                <% _.each(routicle.tables, function(table) { %>
+                <li class="active">
+                    <a href="/routicle/<%= table.model.modelName%>.html">
+                        <%= table.displayName %>
+                    </a>
+                </li>
+                <% }); %>
+           </ul>
+          </div><!--/.nav-collapse -->
+        </div>
+      </div>
+    </div>
+
+    <div class="container">
+
+        <%=body%>
+
+    </div>
+    
+    <script>
+        <% if (routicle.pjson.repository.type === "git") { %>
+        $("body").append('<a href="<%=routicle.pjson.repository.url%>"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 200" src="/other/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>');
+        <% } %>
+    </script>
+ 
+    </body>
+</html>
+
