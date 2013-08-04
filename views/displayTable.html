@@ -23,6 +23,12 @@
             <% _.each(headers, function(v) { %>
             <th><%= v %></th>
             <% }); %>
+
+            <!-- Extra headers for data manipulation -->
+            <!-- Modify -->
+                <th>Edit</th>
+            <!-- Delete -->
+                <th>Remove</th>
         </thead>
         <tbody>
             <% data.map(function(row) { %>
@@ -30,8 +36,12 @@
                  <% _.each(headers, function (col) { %>
                      <td><%= row[col] %></td>
                  <% }); %>
+                 <!-- Edit and Delete Columns -->
+                 <td><a href="#" class="btn btn-primary btn-mini">Edit</a></td>
+                 <td><a href="#" class="btn btn-danger btn-mini">Remove</a></td>
                  </tr>
             <% }); %>
         </tbody>
     </table>
+    <a href="#" class="btn btn-success">Add record to </a>
 </div>
