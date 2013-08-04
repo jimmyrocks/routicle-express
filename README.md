@@ -7,6 +7,7 @@ the following commands after you clone the project:
 ```shell
 git submodule init
 git submodule update
+git submodule foreach git pull origin master
 ```
 
 See the Routicle project for more information on how to use Routicle
