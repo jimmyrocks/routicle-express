@@ -1,58 +1,63 @@
 <html>
     <head>
         <title><%=title%></title>
-        <link href="//netdna.bootstrapcdn.com/twitter-bootstrap/2.3.2/css/bootstrap-combined.min.css" rel="stylesheet">
-        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
-        <style type="text/css">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0-rc1/css/bootstrap.min.css" rel="stylesheet">
+        <style>
             body {
-                padding-top: 60px;
-            }
-            @media (max-width: 979px) {
-                body {
-                    padding-top: 0px;
-                }
+                #    padding-top: 60px;
             }
         </style>
+        <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
     </head>
     <body>
 
-  <body>
-    <div class="navbar navbar-fixed-top" style="z-index:100">
-      <div class="navbar-inner">
-        <div class="container">
-          <button type="button" class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-            <span class="icon-bar"></span>
-          </button>
-          <a class="brand" href="/"><%=routicle.pjson.displayName%></a>
-          <div class="nav-collapse collapse">
-            <ul class="nav">
-                <% _.each(routicle.tables, function(table) { %>
-                <li class="active">
-                    <a href="/routicle/<%= table.model.modelName%>.html">
-                        <%= table.displayName %>
-                    </a>
-                </li>
-                <% }); %>
-           </ul>
-          </div><!--/.nav-collapse -->
+        <!-- get some variables for underscore to use -->
+        <%
+            // Determine the current table name
+            
+            _.each(routicle.tables, function(table) {
+                if (table.model.modelName === title) {
+                    routicle.thisTable = table.displayName;
+                }
+            });
+        %>
+
+        <!-- Static navbar -->
+        <div class="navbar navbar-static-top">
+            <div class="container">
+                <a class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </a>
+                <a class="navbar-brand" href="/" style="max-width: 400px"><%=routicle.pjson.displayName%></a>
+                <div class="nav-collapse collapse">
+                    <ul class="nav navbar-nav">
+                        <% _.each(routicle.tables, function(table) { %>
+                        <li <% if(routicle.thisTable && routicle.thisTable === table.displayName) { %>
+                            class="active"
+                            <% } %>>
+                        <a href="/routicle/<%= table.model.modelName%>.html">
+                            <%= table.displayName %>
+                        </a>
+                        </li>
+                        <% }); %>
+                    </ul>
+                </div><!--/.nav-collapse -->
+            </div>
         </div>
-      </div>
-    </div>
 
-    <div class="container" style>
+        <div class="container">
+            <%=body%>
+        </div>
 
-        <%=body%>
+        <script>
+            <% if (routicle.pjson.repository.type === "git") { %>
+                $("body").append('<a class="nav-collapse collapse" href="<%=routicle.pjson.repository.url%>"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 1031" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>');
+                <% } %>
+        </script>
 
-    </div>
-    
-    <script>
-        <% if (routicle.pjson.repository.type === "git") { %>
-        $("body").append('<a href="<%=routicle.pjson.repository.url%>"><img style="position: absolute; top: 0; right: 0; border: 0; z-index: 200" src="https://s3.amazonaws.com/github/ribbons/forkme_right_green_007200.png" alt="Fork me on GitHub"></a>');
-        <% } %>
-    </script>
- 
     </body>
 </html>
 
