@@ -12,8 +12,10 @@
   },
   "dependencies": {
     "express": "*",
-    "uinexpress": "*",
+    "consolidate": "0.10.0",
     "mongodb": "*",
-    "mongoose": "*"
+    "mongoose": "*",
+    "underscore": "*",
+    "bson": "*"
   }
 }
